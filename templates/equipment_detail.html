@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}장비 상세{% endblock %}
+{% block content %}
+  <h1 class="mb-4">장비 상세 정보</h1>
+
+  <table class="table table-bordered w-auto">
+    <tbody>
+      <tr><th>장비번호</th><td>{{ equipment.equipment_code }}</td></tr>
+      <tr><th>장비명</th><td>{{ equipment.name }}</td></tr>
+      <tr><th>설치장소</th><td>{{ equipment.location }}</td></tr>
+      <tr><th>장비상태</th><td>{{ equipment.status }}</td></tr>
+      <tr><th>등록일</th><td>{{ equipment.registered_at.strftime("%Y-%m-%d") }}</td></tr>
+      <tr><th>설명</th><td>{{ equipment.description }}</td></tr>
+    </tbody>
+  </table>
+
+  <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">목록으로</a>
+  <a class="btn btn-outline-primary" href="#">수정</a>
+  <button class="btn btn-outline-danger" type="button">삭제</button>
+{% endblock %}

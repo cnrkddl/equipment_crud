@@ -1,0 +1,251 @@
+Python 웹 CRUD 기본 과제 지시서
+1. 과제명 : Python 기반 웹 장비관리 CRUD 시스템 개발
+
+2. 과제 목적 : Python 웹 개발의 기본 구조를 이해하고, 데이터의 생성·조회·수정·삭제 기능을 직접 구현
+
+사용 해볼 기능
+
+웹 클라이언트와 서버의 동작 방식
+URL과 라우팅의 개념
+HTML 폼 데이터 처리
+데이터베이스 연결
+CRUD 기능 구현
+입력값 검증 및 예외 처리
+Git을 이용한 소스코드 관리
+
+3. 개발 환경
+다음 기술을 기준으로 개발한다.
+
+Python 3.11 이상
+Flask or Django
+Flask-SQLAlchemy or Django-SQLAlchemy
+SQLite
+HTML, CSS
+Bootstrap
+
+
+설치할 패키지:
+
+Flask or Django
+Flask-SQLAlchemy or Django-SQLAlchemy
+
+4. 개발 대상
+장비 정보를 관리하는 웹페이지를 개발한다.
+
+장비 정보 항목
+항목	설명
+장비번호	장비를 구분하는 고유번호
+장비명	장비 이름
+장소	        장소
+장비상태	정상, 점검중, 고장
+등록일	장비 등록일
+설명	기타 특이사항
+
+5. 필수 구현 기능
+5-1. 장비 등록: Create
+
+사용자가 입력한 장비 정보를 데이터베이스에 저장한다.
+
+필수 조건:
+
+장비번호와 장비명은 필수 입력
+장비번호는 중복 등록 불가
+등록 성공 후 장비 목록 화면으로 이동
+등록 완료 메시지 출력
+
+예시 URL:
+GET  /equipment/create
+POST /equipment/create
+
+5-2. 장비 목록 조회: Read
+등록된 장비 전체를 표 형태로 출력한다.
+
+목록에 표시할 내용:
+장비번호
+장비명
+설치장소
+장비상태
+등록일
+상세보기 버튼
+수정 버튼
+삭제 버튼
+
+예시 URL:
+GET /equipment
+
+5-3. 장비 상세 조회: Read
+선택한 장비의 전체 정보를 조회한다.
+
+예시 URL:
+GET /equipment/<id>
+
+표시 내용:
+장비의 모든 등록 정보
+목록으로 돌아가기 버튼
+수정 버튼
+삭제 버튼
+
+5-4. 장비 정보 수정: Update
+기존에 등록된 장비 정보를 수정한다.
+
+필수 조건:
+수정 화면에는 기존 값이 표시되어야 함
+필수 입력값을 검사해야 함
+수정 성공 후 상세 또는 목록 화면으로 이동
+존재하지 않는 장비 접근 시 오류 처리
+
+예시 URL:
+GET  /equipment/<id>/edit
+POST /equipment/<id>/edit
+
+5-5. 장비 삭제: Delete
+선택한 장비 정보를 데이터베이스에서 삭제한다.
+
+필수 조건:
+삭제 전 확인 메시지 표시
+삭제 요청은 POST 방식으로 처리
+삭제 완료 후 목록 화면으로 이동
+존재하지 않는 장비 삭제 요청에 대한 오류 처리
+
+예시 URL:
+POST /equipment/<id>/delete
+
+6. 데이터베이스 구조
+
+테이블명:
+equipment
+
+예시 모델:
+class Equipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    equipment_code = db.Column(db.String(30), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(100))
+    status = db.Column(db.String(20), default="정상")
+    registered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    description = db.Column(db.Text)
+
+7. 권장 폴더 구조
+equipment_crud/
+├── app.py
+├── models.py
+├── requirements.txt
+├── README.md
+├── instance/
+│   └── equipment.db
+├── templates/
+│   ├── base.html
+│   ├── equipment_list.html
+│   ├── equipment_detail.html
+│   ├── equipment_create.html
+│   └── equipment_edit.html
+└── static/
+    └── style.css
+
+
+8. 화면 구성
+공통 화면
+
+상단 메뉴:
+
+장비 목록 | 장비 등록
+장비 목록 화면
+장비 관리
+
+[장비 등록]
+
+장비번호 | 장비명 | 설치장소 | 상태 | 관리
+EQ-001  | RGB 카메라 | 테스트실 | 정상 | 상세 수정 삭제
+장비 등록·수정 화면
+
+입력 항목:
+장비번호
+장비명
+설치장소
+장비상태
+설명
+
+장비상태는 선택창으로 구현한다.
+
+정상
+점검중
+고장
+
+9. 입력값 검증
+
+다음 사항은 반드시 검사한다.
+
+장비번호가 비어 있는지 확인
+장비명이 비어 있는지 확인
+장비번호 중복 여부 확인
+입력 문자열 앞뒤 공백 제거
+존재하지 않는 ID 접근 처리
+데이터베이스 저장 실패 시 예외 처리
+
+잘못된 입력이 발생하면 프로그램이 종료되지 않고 사용자에게 메시지를 보여줘야 한다.
+
+예시:
+장비번호를 입력해 주세요.
+이미 등록된 장비번호입니다.
+해당 장비를 찾을 수 없습니다.
+
+10. 개발 순서
+1단계: 개발환경 구성
+프로젝트 폴더 생성
+가상환경 생성
+Flask or Django 설치
+requirements.txt 작성
+Flask or Django기본 화면 실행
+
+실행 확인 기준:
+
+http://127.0.0.1:5000
+
+접속 시 정상 화면이 표시되어야 한다.
+
+2단계: 데이터베이스 구성
+SQLite 연결
+Equipment 모델 작성
+테이블 생성
+테스트 데이터 3건 등록
+
+3단계: 목록 및 상세 조회
+전체 목록 화면 구현
+장비 상세 화면 구현
+존재하지 않는 장비 예외 처리
+
+4단계: 등록 기능
+등록 폼 작성
+폼 데이터 수신
+입력값 검증
+데이터베이스 저장
+
+5단계: 수정 및 삭제 기능
+수정 화면 구현
+기존 데이터 표시
+수정 데이터 저장
+삭제 확인 및 삭제 처리
+
+6단계: 화면 정리
+공통 레이아웃 적용
+Bootstrap 적용
+성공·오류 메시지 표시
+버튼 및 표 정렬
+
+7단계: 테스트 및 문서화
+CRUD 전체 기능 점검
+오류 상황 확인
+README 작성
+
+11. 일정 예시
+일차	업무 내용	결과물
+1일차	Flask or Django 기본 구조와 라우팅 학습	기본 웹페이지
+2일차	SQLite와 SQLAlchemy 학습	장비 테이블
+3일차	목록·상세·등록 기능 구현	Create, Read
+4일차	수정·삭제·입력검증 구현	Update, Delete
+5일차	화면 정리, 테스트, 문서 작성	최종 결과물
+Python 웹 개발의 기본 교육을 위해 Flask와 SQLite를 이용한 장비관리 CRUD 웹페이지를 개발해 주세요.
+
+관리 대상은 폐플라스틱 선별 시스템의 장비 정보이며, 장비 등록, 목록 조회, 상세 조회, 수정, 삭제 기능을 구현합니다. 장비번호 중복 검사, 필수값 검사, 존재하지 않는 데이터 접근 처리도 포함해 주세요.
+
+먼저 최소 기능이 동작하도록 구현한 후 화면 디자인과 코드 구조를 정리합니다. 작업 결과는 소스코드, requirements.txt, README, 화면 캡처 및 테스트 결과와 함께 제출해 주세요. Git 커밋은 기능 단위로 구분해서 작성합니다.
