@@ -46,10 +46,6 @@ tools: Read, Write, Glob, Grep
 
 ## 완료 후
 
-작성한 테스트가 **반드시 먼저 실패**하는지 확인한다.
+test-writer는 `Bash`가 없어서 직접 pytest를 실행할 수 없다. 테스트 작성이 끝나면 **어떤 테스트를 왜 그렇게 썼는지**만 보고하고 끝낸다.
 
-```bash
-venv/Scripts/python.exe -m pytest -v
-```
-
-RED 상태(의도한 이유로 FAIL)를 확인한 뒤에만 Developer Agent에게 넘긴다.
+RED 확인(의도한 이유로 FAIL하는지)은 오케스트레이터가 별도로 pytest를 돌려서 확인한 뒤, 그 결과를 갖고 Developer Agent를 호출한다.
