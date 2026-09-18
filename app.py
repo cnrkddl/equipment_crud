@@ -92,6 +92,19 @@ def create_app(test_config=None):
             return redirect(url_for("equipment_list"))
         return render_template("equipment_edit.html", equipment=equipment)
 
+    # "/equipment/<id>/delete" 접속 시 실행되는 라우트
+    # POST 요청만 허용, 삭제 완료 후 목록 화면으로 이동
+    @app.route("/equipment/<int:id>/delete", methods=["POST"])
+    def equipment_delete(id):
+        equipment = db.session.get(Equipment, id)
+        if equipment is None:
+            abort(404, description="해당 장비를 찾을 수 없습니다.")
+
+        db.session.delete(equipment)
+        db.session.commit()
+
+        return redirect(url_for("equipment_list"))
+
     # "/equipment/create" 접속 시 실행되는 라우트
     # GET: 빈 등록 폼 보여주기
     # POST : 폼 제출하기 

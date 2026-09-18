@@ -25,7 +25,9 @@
           <td>
             <a class="btn btn-sm btn-outline-primary" href="#">상세</a>
             <a class="btn btn-sm btn-outline-secondary" href="#">수정</a>
-            <button class="btn btn-sm btn-outline-danger" type="button">삭제</button>
+            <form action="{{ url_for('equipment_delete', id=equipment.id) }}" method="post" class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+              <button class="btn btn-sm btn-outline-danger" type="submit">삭제</button>
+            </form>
           </td>
         </tr>
       {% else %}

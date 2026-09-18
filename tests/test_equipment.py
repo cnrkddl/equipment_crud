@@ -383,3 +383,60 @@ def test_수정시_입력값_앞뒤_공백이_제거되어_저장된다(client, 
     assert updated.name == "수정된장비"
     assert updated.location == "창고"
     assert updated.description == "설명입니다"
+
+
+def test_존재하는_장비를_삭제하면_DB에서_삭제된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-1000",
+        name="폐기 예정 장비",
+        location="창고",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+    equipment_id = equipment.id
+
+    client.post(f"/equipment/{equipment_id}/delete")
+
+    assert db.session.get(Equipment, equipment_id) is None
+
+
+def test_장비_삭제_완료_후_목록_화면으로_이동한다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-1001",
+        name="폐기 예정 장비2",
+        location="창고",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.post(f"/equipment/{equipment.id}/delete")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/equipment"
+
+
+def test_존재하지_않는_id로_삭제_요청시_오류_처리된다(client):
+    response = client.post("/equipment/9999/delete")
+
+    assert response.status_code == 404
+    assert "해당 장비를 찾을 수 없습니다".encode() in response.data
+
+
+def test_장비_삭제는_GET_요청을_허용하지_않는다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-1002",
+        name="삭제 대상 아님",
+        location="창고",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.get(f"/equipment/{equipment.id}/delete")
+
+    assert response.status_code == 405
