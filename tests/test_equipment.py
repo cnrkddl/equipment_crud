@@ -440,3 +440,61 @@ def test_장비_삭제는_GET_요청을_허용하지_않는다(client, db):
     response = client.get(f"/equipment/{equipment.id}/delete")
 
     assert response.status_code == 405
+
+
+def test_상단_메뉴의_장비_등록_링크가_등록_화면으로_연결된다(client):
+    response = client.get("/equipment")
+
+    assert response.status_code == 200
+    assert 'href="/equipment/create"'.encode() in response.data
+
+
+def test_목록의_상세_버튼이_상세_화면으로_연결된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-1100",
+        name="목록_상세링크_확인용_장비",
+        location="",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.get("/equipment")
+
+    assert response.status_code == 200
+    assert f'href="/equipment/{equipment.id}"'.encode() in response.data
+
+
+def test_목록의_수정_버튼이_수정_화면으로_연결된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-1101",
+        name="목록_수정링크_확인용_장비",
+        location="",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.get("/equipment")
+
+    assert response.status_code == 200
+    assert f'href="/equipment/{equipment.id}/edit"'.encode() in response.data
+
+
+def test_상세_화면의_수정_버튼이_수정_화면으로_연결된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-1102",
+        name="상세_수정링크_확인용_장비",
+        location="",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.get(f"/equipment/{equipment.id}")
+
+    assert response.status_code == 200
+    assert f'href="/equipment/{equipment.id}/edit"'.encode() in response.data
