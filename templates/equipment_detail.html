@@ -1,22 +1,27 @@
 {% extends "base.html" %}
 {% block title %}장비 상세{% endblock %}
 {% block content %}
-  <h1 class="mb-4">장비 상세 정보</h1>
-
-  <table class="table table-bordered w-auto">
-    <tbody>
-      <tr><th>장비번호</th><td>{{ equipment.equipment_code }}</td></tr>
-      <tr><th>장비명</th><td>{{ equipment.name }}</td></tr>
-      <tr><th>설치장소</th><td>{{ equipment.location }}</td></tr>
-      <tr><th>장비상태</th><td>{{ equipment.status }}</td></tr>
-      <tr><th>등록일</th><td>{{ equipment.registered_at.strftime("%Y-%m-%d") }}</td></tr>
-      <tr><th>설명</th><td>{{ equipment.description }}</td></tr>
-    </tbody>
-  </table>
-
-  <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">목록으로</a>
-  <a class="btn btn-outline-primary" href="{{ url_for('equipment_edit', id=equipment.id) }}">수정</a>
-  <form action="{{ url_for('equipment_delete', id=equipment.id) }}" method="post" class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-    <button class="btn btn-outline-danger" type="submit">삭제</button>
-  </form>
+  {% set status_class = {"정상": "ok", "점검중": "pending", "고장": "fault"}.get(equipment.status, "pending") %}
+  <div class="spec-sheet">
+    <div class="spec-sheet__head">
+      <span class="spec-sheet__name">{{ equipment.name }}</span>
+      <span class="code">{{ equipment.equipment_code }}</span>
+      <span class="status-badge status-badge--{{ status_class }}">{{ equipment.status }}</span>
+    </div>
+    <dl class="spec-sheet__grid">
+      <dt>설치장소</dt>
+      <dd>{{ equipment.location }}</dd>
+      <dt>등록일</dt>
+      <dd>{{ equipment.registered_at.strftime("%Y-%m-%d") }}</dd>
+      <dt>설명</dt>
+      <dd>{{ equipment.description }}</dd>
+    </dl>
+    <div class="spec-sheet__actions">
+      <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">목록으로</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('equipment_edit', id=equipment.id) }}">수정</a>
+      <form action="{{ url_for('equipment_delete', id=equipment.id) }}" method="post" class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <button class="btn btn-outline-danger" type="submit">삭제</button>
+      </form>
+    </div>
+  </div>
 {% endblock %}

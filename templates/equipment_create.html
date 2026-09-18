@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% block title %}장비 등록{% endblock %}
 {% block content %}
-  <h1 class="mb-4">장비 등록</h1>
+  <h1>장비 등록</h1>
 
-  <form method="post">
-    <div class="mb-3">
+  <form method="post" class="form-shell">
+    <div class="field">
       <label class="form-label" for="equipment_code">장비번호</label>
-      <input class="form-control" type="text" id="equipment_code" name="equipment_code"
+      <input class="form-control code" type="text" id="equipment_code" name="equipment_code"
              value="{{ form.equipment_code if form else '' }}">
     </div>
-    <div class="mb-3">
+    <div class="field">
       <label class="form-label" for="name">장비명</label>
       <input class="form-control" type="text" id="name" name="name"
              value="{{ form.name if form else '' }}">
     </div>
-    <div class="mb-3">
+    <div class="field">
       <label class="form-label" for="location">설치장소</label>
       <input class="form-control" type="text" id="location" name="location"
              value="{{ form.location if form else '' }}">
     </div>
-    <div class="mb-3">
+    <div class="field">
       <label class="form-label" for="status">장비상태</label>
       <select class="form-select" id="status" name="status">
         {% for option in ["정상", "점검중", "고장"] %}
@@ -29,12 +29,14 @@
         {% endfor %}
       </select>
     </div>
-    <div class="mb-3">
+    <div class="field">
       <label class="form-label" for="description">설명</label>
       <textarea class="form-control" id="description" name="description" rows="3">{{ form.description if form else '' }}</textarea>
     </div>
 
-    <button class="btn btn-primary" type="submit">등록</button>
-    <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">취소</a>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">등록</button>
+      <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">취소</a>
+    </div>
   </form>
 {% endblock %}

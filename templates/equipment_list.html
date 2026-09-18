@@ -1,9 +1,27 @@
 {% extends "base.html" %}
 {% block title %}장비 목록{% endblock %}
 {% block content %}
-  <h1 class="mb-4">장비 목록</h1>
+  <h1>장비 목록</h1>
 
-  <table class="table table-bordered table-hover">
+  {% set ok_count = equipments|selectattr("status", "equalto", "정상")|list|length %}
+  {% set pending_count = equipments|selectattr("status", "equalto", "점검중")|list|length %}
+  {% set fault_count = equipments|selectattr("status", "equalto", "고장")|list|length %}
+  <div class="fleet-summary">
+    <div class="stat">
+      <span class="stat__value stat__value--ok">{{ ok_count }}</span>
+      <span class="stat__label">가동 중</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value stat__value--pending">{{ pending_count }}</span>
+      <span class="stat__label">점검 필요</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value stat__value--fault">{{ fault_count }}</span>
+      <span class="stat__label">고장</span>
+    </div>
+  </div>
+
+  <table class="ledger">
     <thead>
       <tr>
         <th>장비번호</th>
@@ -16,23 +34,26 @@
     </thead>
     <tbody>
       {% for equipment in equipments %}
-        <tr>
-          <td>{{ equipment.equipment_code }}</td>
+        {% set status_class = {"정상": "ok", "점검중": "pending", "고장": "fault"}.get(equipment.status, "pending") %}
+        <tr class="status-{{ status_class }}">
+          <td><span class="code">{{ equipment.equipment_code }}</span></td>
           <td>{{ equipment.name }}</td>
           <td>{{ equipment.location }}</td>
-          <td>{{ equipment.status }}</td>
+          <td><span class="status-badge status-badge--{{ status_class }}">{{ equipment.status }}</span></td>
           <td>{{ equipment.registered_at.strftime("%Y-%m-%d") }}</td>
           <td>
-            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('equipment_detail', id=equipment.id) }}">상세</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('equipment_edit', id=equipment.id) }}">수정</a>
-            <form action="{{ url_for('equipment_delete', id=equipment.id) }}" method="post" class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-              <button class="btn btn-sm btn-outline-danger" type="submit">삭제</button>
-            </form>
+            <div class="d-flex gap-2">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('equipment_detail', id=equipment.id) }}">상세</a>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('equipment_edit', id=equipment.id) }}">수정</a>
+              <form action="{{ url_for('equipment_delete', id=equipment.id) }}" method="post" class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <button class="btn btn-sm btn-outline-danger" type="submit">삭제</button>
+              </form>
+            </div>
           </td>
         </tr>
       {% else %}
         <tr>
-          <td colspan="6" class="text-center text-muted">등록된 장비가 없습니다.</td>
+          <td colspan="6" class="text-center text-muted py-4">등록된 장비가 없습니다.</td>
         </tr>
       {% endfor %}
     </tbody>

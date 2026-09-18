@@ -1,3 +1,328 @@
+/* Design tokens: neutral structure, color reserved for status meaning */
+:root {
+  --base: #f4f4f2;
+  --surface: #ffffff;
+  --ink: #16181a;
+  --muted: #63666a;
+  --line: #dcdcd8;
+  --moss: #1f2937;
+  --moss-deep: #11161d;
+  --amber: #c98a2b;
+  --status-ok: #2f7a52;
+  --status-ok-soft: #dceee2;
+  --status-pending: #c98a2b;
+  --status-pending-soft: #f2e2c2;
+  --status-fault: #b23a2e;
+  --status-fault-soft: #f5dcd8;
+}
+
 body {
-  background-color: #f8f9fa;
+  background: var(--base);
+  color: var(--ink);
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+h1 {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.1rem;
+}
+
+.code {
+  font-family: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Layout shell: replaces Bootstrap's narrow centered .container */
+.shell {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.app-content {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* Header */
+.app-header {
+  background: var(--moss);
+  border-bottom: 3px solid var(--amber);
+}
+
+.app-header__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.85rem 2rem;
+}
+
+.app-brand {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.app-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.app-nav .nav-link {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.app-nav .nav-link:hover {
+  color: #ffffff;
+}
+
+.app-nav .nav-link.is-active {
+  color: #ffffff;
+  border-bottom-color: var(--amber);
+}
+
+/* Flash messages: success uses Flask's default "message" category */
+.alert-message {
+  background: var(--status-ok-soft);
+  border-color: var(--status-ok);
+  color: var(--status-ok);
+}
+
+.alert-danger {
+  background: var(--status-fault-soft);
+  border-color: var(--status-fault);
+  color: var(--status-fault);
+}
+
+/* Buttons */
+.btn {
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--moss);
+  border-color: var(--moss);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--moss-deep);
+  border-color: var(--moss-deep);
+}
+
+.btn-outline-primary {
+  color: var(--moss);
+  border-color: var(--moss);
+}
+
+.btn-outline-primary:hover {
+  background: var(--moss);
+  border-color: var(--moss);
+}
+
+.btn-outline-danger {
+  color: var(--status-fault);
+  border-color: var(--status-fault);
+}
+
+.btn-outline-danger:hover {
+  background: var(--status-fault);
+  border-color: var(--status-fault);
+}
+
+/* Status badge: 정상/점검중/고장 */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.status-badge--ok {
+  background: var(--status-ok-soft);
+  color: var(--status-ok);
+}
+
+.status-badge--pending {
+  background: var(--status-pending-soft);
+  color: #7a5713;
+}
+
+.status-badge--fault {
+  background: var(--status-fault-soft);
+  color: var(--status-fault);
+}
+
+/* Fleet summary: the list page's hero, built from real content */
+.fleet-summary {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat__value {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.stat__value--ok {
+  color: var(--status-ok);
+}
+
+.stat__value--pending {
+  color: var(--status-pending);
+}
+
+.stat__value--fault {
+  color: var(--status-fault);
+}
+
+.stat__label {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Ledger table: horizontal rules only, generous row height */
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--ink);
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ledger td {
+  padding: 1.1rem 1rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.ledger tbody tr:hover {
+  background: rgba(63, 91, 59, 0.05);
+}
+
+.ledger td:first-child,
+.ledger th:first-child {
+  border-left: 4px solid transparent;
+  padding-left: 1.25rem;
+}
+
+.ledger tr.status-ok td:first-child {
+  border-left-color: var(--status-ok);
+}
+
+.ledger tr.status-pending td:first-child {
+  border-left-color: var(--status-pending);
+}
+
+.ledger tr.status-fault td:first-child {
+  border-left-color: var(--status-fault);
+}
+
+.text-center-col {
+  text-align: center;
+}
+
+/* Detail view: a spec sheet, not a cramped narrow table */
+.spec-sheet {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--amber);
+  padding: 2.5rem;
+  max-width: 44rem;
+}
+
+.spec-sheet__head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.spec-sheet__name {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+}
+
+.spec-sheet__grid {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  row-gap: 1rem;
+  column-gap: 1rem;
+  margin: 0;
+}
+
+.spec-sheet__grid dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.spec-sheet__grid dd {
+  margin: 0;
+}
+
+.spec-sheet__actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Forms */
+.form-shell {
+  max-width: 34rem;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.form-control,
+.form-select {
+  border-radius: 2px;
+  padding: 0.5rem 0.8rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--moss);
+  box-shadow: 0 0 0 0.2rem rgba(63, 91, 59, 0.15);
+}
+
+textarea.form-control {
+  resize: none;
 }
