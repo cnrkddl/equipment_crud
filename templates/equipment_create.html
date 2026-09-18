@@ -22,7 +22,7 @@
     <div class="field">
       <label class="form-label" for="status">장비상태</label>
       <select class="form-select" id="status" name="status">
-        {% for option in ["정상", "점검중", "고장"] %}
+        {% for option in equipment_statuses %}
           <option value="{{ option }}" {% if form and form.status == option %}selected{% endif %}>
             {{ option }}
           </option>

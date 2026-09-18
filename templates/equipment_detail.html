@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}장비 상세{% endblock %}
 {% block content %}
-  {% set status_class = {"정상": "ok", "점검중": "pending", "고장": "fault"}.get(equipment.status, "pending") %}
+  {% set status_class = status_style(equipment.status) %}
   <div class="spec-sheet">
     <div class="spec-sheet__head">
       <span class="spec-sheet__name">{{ equipment.name }}</span>

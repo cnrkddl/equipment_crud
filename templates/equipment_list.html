@@ -34,7 +34,7 @@
     </thead>
     <tbody>
       {% for equipment in equipments %}
-        {% set status_class = {"정상": "ok", "점검중": "pending", "고장": "fault"}.get(equipment.status, "pending") %}
+        {% set status_class = status_style(equipment.status) %}
         <tr class="status-{{ status_class }}">
           <td><span class="code">{{ equipment.equipment_code }}</span></td>
           <td>{{ equipment.name }}</td>

@@ -1,5 +1,5 @@
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
-from models import Equipment, db
+from models import EQUIPMENT_STATUSES, Equipment, db, status_style
 
 # 매번 새 Flask 앱을 만들어서 반환하기 때문에,
 # 평소 실행과 테스트가 서로 다른 설정으로
@@ -16,6 +16,11 @@ def create_app(test_config=None):
     # db를 이 Flask 앱과 실제로 연결
     db.init_app(app)
 
+    # 상태 목록/뱃지 색상 매핑을 모든 템플릿에서 같은 곳(models.py)을 참조하게 함
+    @app.context_processor
+    def inject_equipment_constants():
+        return dict(equipment_statuses=EQUIPMENT_STATUSES, status_style=status_style)
+
     # "/" 접속 시 "/equipment"로 리다이렉트
     @app.route("/")
     def index():
@@ -28,7 +33,7 @@ def create_app(test_config=None):
         return render_template("equipment_list.html", equipments=equipments)
 
     # "/equipment/<id>" 접속 시 실행되는 라우트
-    # <int:id> : 컨버터 
+    # <int:id> : 컨버터
     @app.route("/equipment/<int:id>") #이 위치에 정수가 들어오면 id라는 이름으로 받겠다는 뜻
     def equipment_detail(id):
         equipment = db.session.get(Equipment, id) #있으면 equipment반환 , 없으면 none
@@ -112,7 +117,7 @@ def create_app(test_config=None):
 
     # "/equipment/create" 접속 시 실행되는 라우트
     # GET: 빈 등록 폼 보여주기
-    # POST : 폼 제출하기 
+    # POST : 폼 제출하기
     @app.route("/equipment/create", methods=["GET", "POST"])
     def equipment_create():
         # 검증 실패 시 입력값을 그대로 담아 폼을 다시 보여줌 (에러는 flash로 표시)
@@ -164,11 +169,11 @@ def create_app(test_config=None):
             return redirect(url_for("equipment_list"))
         return render_template("equipment_create.html")
 
-    return app  
+    return app
 
 app = create_app()
 
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  
+        db.create_all()
     app.run(debug=True)
