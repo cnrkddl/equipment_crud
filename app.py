@@ -110,11 +110,10 @@ def create_app(test_config=None):
     # POST : 폼 제출하기 
     @app.route("/equipment/create", methods=["GET", "POST"])
     def equipment_create():
-        # 검증 실패 시 입력값과 에러 메시지를 그대로 담아 폼을 다시 보여줌
+        # 검증 실패 시 입력값을 그대로 담아 폼을 다시 보여줌 (에러는 flash로 표시)
         def render_form_error(error):
-            return render_template(
-                "equipment_create.html", form=request.form, error=error
-            )
+            flash(error, "error")
+            return render_template("equipment_create.html", form=request.form)
 
         if request.method == "POST":
             # 모든 입력 문자열은 앞뒤 공백을 제거해서 저장
@@ -151,11 +150,11 @@ def create_app(test_config=None):
             try:
                 db.session.commit()
             except Exception:
-                # DB 저장 실패 : 안내 메시지를 보여줌 
+                # DB 저장 실패 : 안내 메시지를 보여줌
                 db.session.rollback()
                 return render_form_error("저장 중 오류가 발생했습니다")
 
-            flash("등록이 완료되었습니다") 
+            flash("등록이 완료되었습니다")
             # 사용자를 목록 페이지로 이동시킴
             return redirect(url_for("equipment_list"))
         return render_template("equipment_create.html")
