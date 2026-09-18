@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,33 +10,36 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
     rel="stylesheet">
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
   <nav class="navbar navbar-expand navbar-dark app-header">
     <div class="shell app-header__bar">
       <a class="app-brand" href="{{ url_for('equipment_list') }}">장비 관리</a>
       <div class="app-nav">
         <a class="nav-link {{ 'is-active' if request.endpoint in ('equipment_list', 'equipment_detail', 'equipment_edit') else '' }}"
-           href="{{ url_for('equipment_list') }}">장비 목록</a>
+          href="{{ url_for('equipment_list') }}">장비 목록</a>
         <a class="nav-link {{ 'is-active' if request.endpoint == 'equipment_create' else '' }}"
-           href="{{ url_for('equipment_create') }}">장비 등록</a>
+          href="{{ url_for('equipment_create') }}">장비 등록</a>
       </div>
     </div>
   </nav>
 
   <div class="shell app-content">
+    <!--with를 통해 임시변수 선언 categories= true를 통해 리스트로 반환 -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
+    <!-- messages가 참이면 -->
+    {% if messages %}
+    <!-- categories를 통해 리스트 안의 (category, message)쌍을 하나씩 꺼냄 -->
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+      {{ message }} <!--flash한 메시지 텍스트를 그대로 화면에 출력-->
+    </div>
+    <!--위에 블럭들 닫기-->
+    {% endfor %}
+    {% endif %}
     {% endwith %}
 
     {% block content %}{% endblock %}
@@ -43,4 +47,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

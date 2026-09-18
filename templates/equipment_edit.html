@@ -1,42 +1,40 @@
 {% extends "base.html" %}
 {% block title %}장비 수정{% endblock %}
 {% block content %}
-  <h1>장비 수정</h1>
+<h1>장비 수정</h1>
 
-  <form method="post" class="form-shell">
-    <div class="field">
-      <label class="form-label" for="equipment_code">장비번호</label>
-      <input class="form-control code" type="text" id="equipment_code" name="equipment_code"
-             value="{{ equipment.equipment_code }}">
-    </div>
-    <div class="field">
-      <label class="form-label" for="name">장비명</label>
-      <input class="form-control" type="text" id="name" name="name"
-             value="{{ equipment.name }}">
-    </div>
-    <div class="field">
-      <label class="form-label" for="location">설치장소</label>
-      <input class="form-control" type="text" id="location" name="location"
-             value="{{ equipment.location }}">
-    </div>
-    <div class="field">
-      <label class="form-label" for="status">장비상태</label>
-      <select class="form-select" id="status" name="status">
-        {% for option in equipment_statuses %}
-          <option value="{{ option }}" {% if equipment.status == option %}selected{% endif %}>
-            {{ option }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="field">
-      <label class="form-label" for="description">설명</label>
-      <textarea class="form-control" id="description" name="description" rows="3">{{ equipment.description }}</textarea>
-    </div>
+<form method="post" class="form-shell">
+  <div class="field">
+    <label class="form-label" for="equipment_code">장비번호</label>
+    <input class="form-control code" type="text" id="equipment_code" name="equipment_code"
+      value="{{ equipment.equipment_code }}">
+  </div>
+  <div class="field">
+    <label class="form-label" for="name">장비명</label>
+    <input class="form-control" type="text" id="name" name="name" value="{{ equipment.name }}">
+  </div>
+  <div class="field">
+    <label class="form-label" for="location">설치장소</label>
+    <input class="form-control" type="text" id="location" name="location" value="{{ equipment.location }}">
+  </div>
+  <div class="field">
+    <label class="form-label" for="status">장비상태</label>
+    <select class="form-select" id="status" name="status">
+      {% for option in equipment_statuses %}
+      <option value="{{ option }}" {% if equipment.status==option %}selected{% endif %}>
+        {{ option }} <!--드롭다운에 실제로 보이는 텍스트-->
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label class="form-label" for="description">설명</label>
+    <textarea class="form-control" id="description" name="description" rows="3">{{ equipment.description }}</textarea>
+  </div>
 
-    <div class="d-flex gap-2">
-      <button class="btn btn-primary" type="submit">수정</button>
-      <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">취소</a>
-    </div>
-  </form>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">수정</button>
+    <a class="btn btn-secondary" href="{{ url_for('equipment_list') }}">취소</a>
+  </div>
+</form>
 {% endblock %}
