@@ -7,21 +7,24 @@
   <div class="field">
     <label class="form-label" for="equipment_code">장비번호</label>
     <input class="form-control code" type="text" id="equipment_code" name="equipment_code"
-      value="{{ equipment.equipment_code }}">
+      value="{{ form.equipment_code if form else equipment.equipment_code }}">
   </div>
   <div class="field">
     <label class="form-label" for="name">장비명</label>
-    <input class="form-control" type="text" id="name" name="name" value="{{ equipment.name }}">
+    <input class="form-control" type="text" id="name" name="name"
+      value="{{ form.name if form else equipment.name }}">
   </div>
   <div class="field">
     <label class="form-label" for="location">설치장소</label>
-    <input class="form-control" type="text" id="location" name="location" value="{{ equipment.location }}">
+    <input class="form-control" type="text" id="location" name="location"
+      value="{{ form.location if form else equipment.location }}">
   </div>
   <div class="field">
     <label class="form-label" for="status">장비상태</label>
     <select class="form-select" id="status" name="status">
+      {% set selected_status = form.status if form else equipment.status %}
       {% for option in equipment_statuses %}
-      <option value="{{ option }}" {% if equipment.status==option %}selected{% endif %}>
+      <option value="{{ option }}" {% if selected_status==option %}selected{% endif %}>
         {{ option }} <!--드롭다운에 실제로 보이는 텍스트-->
       </option>
       {% endfor %}
@@ -29,7 +32,8 @@
   </div>
   <div class="field">
     <label class="form-label" for="description">설명</label>
-    <textarea class="form-control" id="description" name="description" rows="3">{{ equipment.description }}</textarea>
+    <textarea class="form-control" id="description" name="description"
+      rows="3">{{ form.description if form else equipment.description }}</textarea>
   </div>
 
   <div class="d-flex gap-2">
