@@ -38,6 +38,16 @@ def validate_equipment_form(form, exclude_id=None):
     return data, None
 
 
+def commit_or_rollback(log_label):
+    try:
+        db.session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"[DB 오류] {log_label}: {e}")
+        return False
+
+
 # 매번 새 Flask 앱을 만들어서 반환하기 때문에,
 # 평소 실행과 테스트가 서로 다른 설정으로
 def create_app(test_config=None):
@@ -104,11 +114,7 @@ def create_app(test_config=None):
             equipment.status = data["status"]
             equipment.description = data["description"]
 
-            try:
-                db.session.commit()
-            except SQLAlchemyError as e:
-                db.session.rollback()
-                print(f"[DB 오류] 장비 수정 실패 (id={id}): {e}")
+            if not commit_or_rollback(f"장비 수정 실패 (id={id})"):
                 flash("저장 중 오류가 발생했습니다", "error")
                 return render_template(
                     "equipment_edit.html", equipment=equipment, form=request.form
@@ -126,11 +132,7 @@ def create_app(test_config=None):
             abort(404, description="해당 장비를 찾을 수 없습니다.")
 
         db.session.delete(equipment)
-        try:
-            db.session.commit()
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            print(f"[DB 오류] 장비 삭제 실패 (id={id}): {e}")
+        if not commit_or_rollback(f"장비 삭제 실패 (id={id})"):
             flash("삭제 중 오류가 발생했습니다", "error")
             return redirect(url_for("equipment_detail", id=id))
 
@@ -153,11 +155,7 @@ def create_app(test_config=None):
 
             equipment = Equipment(**data)
             db.session.add(equipment)
-            try:
-                db.session.commit()
-            except SQLAlchemyError as e:
-                db.session.rollback()
-                print(f"[DB 오류] 장비 등록 실패: {e}")
+            if not commit_or_rollback("장비 등록 실패"):
                 return render_form_error("저장 중 오류가 발생했습니다")
 
             flash("등록이 완료되었습니다")
