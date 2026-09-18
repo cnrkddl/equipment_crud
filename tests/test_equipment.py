@@ -186,3 +186,200 @@ def test_등록시_입력값_앞뒤_공백이_제거되어_저장된다(client, 
     assert equipment is not None
     assert equipment.location == "테스트실"
     assert equipment.description == "설명입니다"
+
+
+def test_장비_수정_화면_진입시_기존_등록값이_폼에_표시된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-500",
+        name="열화상 카메라",
+        location="검사실",
+        status="점검중",
+        registered_at=datetime(2024, 6, 1),
+        description="렌즈 오염 확인 필요",
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.get(f"/equipment/{equipment.id}/edit")
+
+    assert response.status_code == 200
+    assert "EQ-500".encode() in response.data
+    assert "열화상 카메라".encode() in response.data
+    assert "검사실".encode() in response.data
+    assert "점검중".encode() in response.data
+    assert "렌즈 오염 확인 필요".encode() in response.data
+
+
+def test_필수값을_모두_입력하면_장비_수정_후_목록_화면으로_이동하고_변경사항이_반영된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-600",
+        name="열화상 카메라",
+        location="검사실",
+        status="점검중",
+        registered_at=datetime(2024, 6, 1),
+        description="렌즈 오염 확인 필요",
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.post(
+        f"/equipment/{equipment.id}/edit",
+        data={
+            "equipment_code": "EQ-600",
+            "name": "열화상 카메라(수리 완료)",
+            "location": "보관실",
+            "status": "정상",
+            "description": "렌즈 세척 완료",
+        },
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/equipment"
+
+    list_response = client.get("/equipment")
+
+    assert "열화상 카메라(수리 완료)".encode() in list_response.data
+    assert "보관실".encode() in list_response.data
+
+    detail_response = client.get(f"/equipment/{equipment.id}")
+
+    assert "열화상 카메라(수리 완료)".encode() in detail_response.data
+    assert "보관실".encode() in detail_response.data
+    assert "정상".encode() in detail_response.data
+    assert "렌즈 세척 완료".encode() in detail_response.data
+
+
+def test_장비번호를_비워두고_수정하면_거부되고_안내_메시지가_표시된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-700",
+        name="드론",
+        location="검사실",
+        status="정상",
+        registered_at=datetime(2024, 7, 1),
+        description="배터리 점검 완료",
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.post(
+        f"/equipment/{equipment.id}/edit",
+        data={
+            "equipment_code": "",
+            "name": "드론(수정됨)",
+            "location": "보관실",
+            "status": "점검중",
+            "description": "배터리 교체 예정",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "장비번호는 필수입니다".encode() in response.data
+
+    detail_response = client.get(f"/equipment/{equipment.id}")
+
+    assert "드론".encode() in detail_response.data
+    assert "드론(수정됨)".encode() not in detail_response.data
+    assert "검사실".encode() in detail_response.data
+    assert "보관실".encode() not in detail_response.data
+
+
+def test_장비명을_비워두고_수정하면_거부되고_안내_메시지가_표시된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-800",
+        name="지게차",
+        location="검사실",
+        status="정상",
+        registered_at=datetime(2024, 8, 1),
+        description="타이어 점검 완료",
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    response = client.post(
+        f"/equipment/{equipment.id}/edit",
+        data={
+            "equipment_code": "EQ-800",
+            "name": "",
+            "location": "보관실",
+            "status": "점검중",
+            "description": "타이어 교체 예정",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "장비명은 필수입니다".encode() in response.data
+
+    detail_response = client.get(f"/equipment/{equipment.id}")
+
+    assert "지게차".encode() in detail_response.data
+    assert "검사실".encode() in detail_response.data
+    assert "보관실".encode() not in detail_response.data
+
+
+def test_다른_장비의_장비번호로_수정하면_거부되고_기존_정보가_유지된다(client, db):
+    equipment_a = Equipment(
+        equipment_code="EQ-900",
+        name="장비A",
+        location="",
+        status="정상",
+        registered_at=datetime(2024, 9, 1),
+    )
+    equipment_b = Equipment(
+        equipment_code="EQ-901",
+        name="장비B",
+        location="",
+        status="정상",
+        registered_at=datetime(2024, 9, 1),
+    )
+    db.session.add(equipment_a)
+    db.session.add(equipment_b)
+    db.session.commit()
+
+    response = client.post(
+        f"/equipment/{equipment_a.id}/edit",
+        data={
+            "equipment_code": "EQ-901",
+            "name": "장비A-수정",
+            "location": "",
+            "status": "정상",
+            "description": "",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "이미 등록된 장비번호입니다".encode() in response.data
+
+    detail_response = client.get(f"/equipment/{equipment_a.id}")
+
+    assert "장비A".encode() in detail_response.data
+    assert "장비A-수정".encode() not in detail_response.data
+
+
+def test_수정시_입력값_앞뒤_공백이_제거되어_저장된다(client, db):
+    equipment = Equipment(
+        equipment_code="EQ-950",
+        name="기존장비",
+        location="",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    client.post(
+        f"/equipment/{equipment.id}/edit",
+        data={
+            "equipment_code": "  EQ-950  ",
+            "name": "  수정된장비  ",
+            "location": "  창고  ",
+            "status": "정상",
+            "description": "  설명입니다  ",
+        },
+    )
+
+    updated = Equipment.query.filter_by(equipment_code="EQ-950").first()
+
+    assert updated is not None
+    assert updated.name == "수정된장비"
+    assert updated.location == "창고"
+    assert updated.description == "설명입니다"

@@ -38,7 +38,63 @@ def create_app(test_config=None):
             #설명 문구가 담긴 404 응답을 바로 돌려줌
         return render_template("equipment_detail.html", equipment=equipment)
 
+    # "/equipment/<id>/edit" 접속 시 실행되는 라우트
+    # GET: 수정 폼에 기존 값 표시
+    # POST: 폼 제출된 내용으로 기존 장비 정보 수정
+    @app.route("/equipment/<int:id>/edit", methods=["GET", "POST"])
+    def equipment_edit(id):
+        equipment = db.session.get(Equipment, id)
+        if equipment is None:
+            abort(404, description="해당 장비를 찾을 수 없습니다.")
+
+        if request.method == "POST":
+            # 모든 입력 문자열은 앞뒤 공백을 제거해서 저장
+            equipment_code = request.form.get("equipment_code", "").strip()
+            name = request.form.get("name", "").strip()
+            location = request.form.get("location", "").strip()
+            status = request.form.get("status", "").strip()
+            description = request.form.get("description", "").strip()
+
+            # 장비번호 필수 입력 검증 (기존 equipment 값은 아직 변경하지 않음)
+            if not equipment_code:
+                flash("장비번호는 필수입니다", "error")
+                return render_template("equipment_edit.html", equipment=equipment)
+
+            # 장비명 필수 입력 검증 (기존 equipment 값은 아직 변경하지 않음)
+            if not name:
+                flash("장비명은 필수입니다", "error")
+                return render_template("equipment_edit.html", equipment=equipment)
+
+            # 장비번호 중복 등록 방지 (자기 자신은 제외하고 검사)
+            existing = (
+                Equipment.query.filter_by(equipment_code=equipment_code)
+                .filter(Equipment.id != equipment.id)
+                .first()
+            )
+
+            if existing is not None:
+                flash("이미 등록된 장비번호입니다", "error")
+                return render_template("equipment_edit.html", equipment=equipment)
+
+            equipment.equipment_code = equipment_code
+            equipment.name = name
+            equipment.location = location
+            equipment.status = status
+            equipment.description = description
+
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                flash("저장 중 오류가 발생했습니다", "error")
+                return render_template("equipment_edit.html", equipment=equipment)
+
+            return redirect(url_for("equipment_list"))
+        return render_template("equipment_edit.html", equipment=equipment)
+
     # "/equipment/create" 접속 시 실행되는 라우트
+    # GET: 빈 등록 폼 보여주기
+    # POST : 폼 제출하기 
     @app.route("/equipment/create", methods=["GET", "POST"])
     def equipment_create():
         # 검증 실패 시 입력값과 에러 메시지를 그대로 담아 폼을 다시 보여줌
@@ -48,7 +104,7 @@ def create_app(test_config=None):
             )
 
         if request.method == "POST":
-            # 지시서 9번 요구사항: 모든 입력 문자열은 앞뒤 공백을 제거해서 저장
+            # 모든 입력 문자열은 앞뒤 공백을 제거해서 저장
             equipment_code = request.form.get("equipment_code", "").strip()
             name = request.form.get("name", "").strip()
             location = request.form.get("location", "").strip()
@@ -63,7 +119,7 @@ def create_app(test_config=None):
             if not name:
                 return render_form_error("장비명은 필수입니다")
 
-            # 장비번호 중복 등록 방지: DB 커밋 전에 먼저 조회해서 UNIQUE 제약으로 죽지 않고 안내 메시지로 처리
+            # 장비번호 중복 등록 방지
             existing = Equipment.query.filter_by(
                 equipment_code=equipment_code
             ).first()
@@ -82,16 +138,16 @@ def create_app(test_config=None):
             try:
                 db.session.commit()
             except Exception:
-                # DB 저장 실패 시에도 프로그램이 죽지 않고 안내 메시지를 보여줌 
+                # DB 저장 실패 : 안내 메시지를 보여줌 
                 db.session.rollback()
                 return render_form_error("저장 중 오류가 발생했습니다")
 
-            flash("등록이 완료되었습니다")  # 목록 화면에서 get_flashed_messages()로 표시됨
+            flash("등록이 완료되었습니다") 
+            # 사용자를 목록 페이지로 이동시킴
             return redirect(url_for("equipment_list"))
         return render_template("equipment_create.html")
 
-    return app  # 완성된 Flask 앱 객체 반환
-
+    return app  
 
 app = create_app()
 

@@ -1,6 +1,7 @@
 from app import app
 from models import Equipment, db
 
+# 딕셔너리 목록-> Equipment처럼 한 번에 객체로 풀어 넣기 쉬움
 SAMPLE_EQUIPMENT = [
     {
         "equipment_code": "EQ-001",
@@ -27,12 +28,17 @@ SAMPLE_EQUIPMENT = [
 
 
 def seed():
+    # DB 작업은 Flask 앱 컨텍스트 안에서만 가능-> 임시 활성화
     with app.app_context():
+        # models.py 설계도로 테이블이 없으면 생성
         db.create_all()
+        # DB에 같은 장비번호가 이미 있으면 건너뛰고 없으면 새로 추가 대기시킨다.
         for data in SAMPLE_EQUIPMENT:
             exists = Equipment.query.filter_by(equipment_code=data["equipment_code"]).first()
             if not exists:
                 db.session.add(Equipment(**data))
+
+        # 실제로 DB 파일에 씀
         db.session.commit()
         print(f"테스트 데이터 등록 완료 (총 {Equipment.query.count()}건)")
 
