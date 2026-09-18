@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from models import Equipment
 
 
@@ -513,7 +515,7 @@ def test_삭제_중_DB_오류가_발생하면_오류_메시지를_표시하고_�
     equipment_id = equipment.id
 
     def raise_error():
-        raise Exception("DB 오류")
+        raise SQLAlchemyError("DB 오류")
 
     monkeypatch.setattr(db.session, "commit", raise_error)
 

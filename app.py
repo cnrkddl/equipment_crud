@@ -1,4 +1,6 @@
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
+from sqlalchemy.exc import SQLAlchemyError
+
 from models import Equipment, db
 
 # 등록/수정 폼의 선택지와 목록/상세 화면의 상태 뱃지 색상이 이 목록 하나를 같이 참조한다.
@@ -104,8 +106,9 @@ def create_app(test_config=None):
 
             try:
                 db.session.commit()
-            except Exception:
+            except SQLAlchemyError as e:
                 db.session.rollback()
+                print(f"[DB 오류] 장비 수정 실패 (id={id}): {e}")
                 flash("저장 중 오류가 발생했습니다", "error")
                 return render_template(
                     "equipment_edit.html", equipment=equipment, form=request.form
@@ -125,8 +128,9 @@ def create_app(test_config=None):
         db.session.delete(equipment)
         try:
             db.session.commit()
-        except Exception:
+        except SQLAlchemyError as e:
             db.session.rollback()
+            print(f"[DB 오류] 장비 삭제 실패 (id={id}): {e}")
             flash("삭제 중 오류가 발생했습니다", "error")
             return redirect(url_for("equipment_detail", id=id))
 
@@ -151,9 +155,9 @@ def create_app(test_config=None):
             db.session.add(equipment)
             try:
                 db.session.commit()
-            except Exception:
-                # DB 저장 실패 : 안내 메시지를 보여줌
+            except SQLAlchemyError as e:
                 db.session.rollback()
+                print(f"[DB 오류] 장비 등록 실패: {e}")
                 return render_form_error("저장 중 오류가 발생했습니다")
 
             flash("등록이 완료되었습니다")
