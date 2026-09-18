@@ -101,7 +101,12 @@ def create_app(test_config=None):
             abort(404, description="해당 장비를 찾을 수 없습니다.")
 
         db.session.delete(equipment)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash("삭제 중 오류가 발생했습니다", "error")
+            return redirect(url_for("equipment_detail", id=id))
 
         return redirect(url_for("equipment_list"))
 

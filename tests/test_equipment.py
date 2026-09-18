@@ -498,3 +498,26 @@ def test_상세_화면의_수정_버튼이_수정_화면으로_연결된다(clie
 
     assert response.status_code == 200
     assert f'href="/equipment/{equipment.id}/edit"'.encode() in response.data
+
+
+def test_삭제_중_DB_오류가_발생하면_오류_메시지를_표시하고_상세_화면으로_이동한다(client, db, monkeypatch):
+    equipment = Equipment(
+        equipment_code="EQ-1200",
+        name="삭제_DB_오류_확인용_장비",
+        location="창고",
+        status="정상",
+        registered_at=datetime(2024, 9, 18),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+    equipment_id = equipment.id
+
+    def raise_error():
+        raise Exception("DB 오류")
+
+    monkeypatch.setattr(db.session, "commit", raise_error)
+
+    response = client.post(f"/equipment/{equipment_id}/delete")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == f"/equipment/{equipment_id}"
