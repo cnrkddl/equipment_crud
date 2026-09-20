@@ -38,13 +38,14 @@ def validate_equipment_form(form, exclude_id=None):
     return data, None
 
 
+# 예외처리 함수 지정
 def commit_or_rollback(log_label):
     try:
         db.session.commit()
         return True
-    except SQLAlchemyError as e:
+    except SQLAlchemyError as e:  # 구체적인 예외 클래스 지정
         db.session.rollback()
-        print(f"[DB 오류] {log_label}: {e}")
+        print(f"[DB 오류] {log_label}: {e}")  # 어떤 상황에서 무슨 에러인지 콘솔에 출력
         return False
 
 
@@ -120,7 +121,8 @@ def create_app(test_config=None):
                     "equipment_edit.html", equipment=equipment, form=request.form
                 )
 
-            return redirect(url_for("equipment_list"))
+            return redirect(url_for("equipment_list"))  # 수정 성공 시 장비 목록 페이지로 이동
+        # GET 요청 시: 수정 페이지 진입 시 기존 값을 폼에 채워서 보여줌
         return render_template("equipment_edit.html", equipment=equipment)
 
     # "/equipment/<id>/delete" 접속 시 실행되는 라우트
