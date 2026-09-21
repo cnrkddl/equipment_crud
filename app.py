@@ -1,5 +1,6 @@
-from flask import Flask, abort, flash, redirect, render_template, request, url_for
+from flask import Flask, Response, abort, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.datastructures import ImmutableMultiDict
 
 from models import Equipment, db
 
@@ -7,11 +8,13 @@ EQUIPMENT_STATUSES = ["정상", "점검중", "고장"]
 STATUS_STYLE_MAP = {"정상": "ok", "점검중": "pending", "고장": "fault"}
 
 
-def status_style(status):
+def status_style(status: str) -> str:
     return STATUS_STYLE_MAP.get(status, "pending")
 
 
-def validate_equipment_form(form, exclude_id=None):
+def validate_equipment_form(
+    form: ImmutableMultiDict[str, str], exclude_id: int | None = None
+) -> tuple[dict[str, str] | None, str | None]:
     # 모든 입력 문자열은 앞뒤 공백을 제거해서 저장
     data = {
         "equipment_code": form.get("equipment_code", "").strip(),
@@ -37,7 +40,7 @@ def validate_equipment_form(form, exclude_id=None):
 
 
 # id로 장비를 조회하고, 없으면 404 처리까지 함께 담당
-def get_equipment_or_404(id):
+def get_equipment_or_404(id: int) -> Equipment:
     equipment = db.session.get(Equipment, id) # 있으면 equipment 반환, 없으면 none 반환
     if equipment is None: # 장비가 없으면 실행을 즉시 중단
         abort(404, description="해당 장비를 찾을 수 없습니다.") # 설명 문구가 담긴 404 응답을 바로 돌려줌
@@ -45,14 +48,14 @@ def get_equipment_or_404(id):
 
 
 # 검증/저장 실패 시 방금 제출한 값을 그대로 폼에 다시 보여줌 (DB에 저장된 이전 값이 아님)
-def render_form_error(template, error, **context): #렌더링할 템플릿 파일명 , 에러메세지 문자열, 딕셔너리 매개변수
+def render_form_error(template: str, error: str, **context) -> str: #렌더링할 템플릿 파일명 , 에러메세지 문자열, 딕셔너리 매개변수
     # create안에서는 form만 있으면 되는데 edit에서는 form도 있고 equipment도 넘겨야해서 파라미터 개수 차이 존재 -> 여분의 키워드 인자 사용
     flash(error, "error") # 카테고리를 error로 고정하고 에러 메시지를 담아서 반환
     return render_template(template, form=request.form, **context) # 어떤 템플릿을 렌더링할지, 사용자가 방금 제출했던 폼 데이터를 템플릿에 넘겨 채움 
 
 
 # 예외처리 함수 지정
-def commit_or_rollback(log_label):
+def commit_or_rollback(log_label: str) -> bool:
     try:
         db.session.commit()
         return True
@@ -64,7 +67,7 @@ def commit_or_rollback(log_label):
 
 # 매번 새 Flask 앱을 만들어서 반환하기 때문에,
 # 평소 실행과 테스트가 서로 다른 설정으로
-def create_app(test_config=None):
+def create_app(test_config: dict | None = None) -> Flask:
     app = Flask(__name__)  # Flask 앱 객체 생성
 
     # DB 파일 위치, 세션 암호화 등에 쓰이는 key 설정
@@ -79,24 +82,24 @@ def create_app(test_config=None):
 
     # 상태 목록/뱃지 색상 매핑을 모든 템플릿에서 같은 곳(위 상수)을 참조하게 함
     @app.context_processor
-    def inject_equipment_constants():
+    def inject_equipment_constants() -> dict:
         return dict(equipment_statuses=EQUIPMENT_STATUSES, status_style=status_style)
 
     # "/" 접속 시 "/equipment"로 리다이렉트
     @app.route("/")
-    def index():
+    def index() -> Response:
         return redirect(url_for("equipment_list"))
 
     # "/equipment" 접속 시 실행되는 라우트
     @app.route("/equipment")
-    def equipment_list():
+    def equipment_list() -> str:
         equipments = Equipment.query.all()  # equipment 테이블 전체 조회
         return render_template("equipment_list.html", equipments=equipments)
 
     # "/equipment/<id>" 접속 시 실행되는 라우트
     # <int:id> : 컨버터
     @app.route("/equipment/<int:id>") #이 위치에 정수가 들어오면 id라는 이름으로 받겠다는 뜻
-    def equipment_detail(id):
+    def equipment_detail(id: int) -> str:
         equipment = get_equipment_or_404(id)
         return render_template("equipment_detail.html", equipment=equipment)
 
@@ -104,7 +107,7 @@ def create_app(test_config=None):
     # GET: 수정 폼에 기존 값 표시
     # POST: 폼 제출된 내용으로 기존 장비 정보 수정
     @app.route("/equipment/<int:id>/edit", methods=["GET", "POST"])
-    def equipment_edit(id):
+    def equipment_edit(id: int) -> str | Response:
         equipment = get_equipment_or_404(id)
 
         if request.method == "POST":
@@ -130,7 +133,7 @@ def create_app(test_config=None):
     # "/equipment/<id>/delete" 접속 시 실행되는 라우트
     # POST 요청만 허용, 삭제 완료 후 목록 화면으로 이동
     @app.route("/equipment/<int:id>/delete", methods=["POST"])
-    def equipment_delete(id):
+    def equipment_delete(id: int) -> Response:
         equipment = get_equipment_or_404(id)
 
         db.session.delete(equipment)
@@ -144,7 +147,7 @@ def create_app(test_config=None):
     # GET: 빈 등록 폼 보여주기
     # POST : 폼 제출하기
     @app.route("/equipment/create", methods=["GET", "POST"])
-    def equipment_create():
+    def equipment_create() -> str | Response:
         if request.method == "POST":
             data, error = validate_equipment_form(request.form)
             if error:
