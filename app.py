@@ -3,8 +3,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from models import Equipment, db
 
-# 등록/수정 폼의 선택지와 목록/상세 화면의 상태 뱃지 색상이 이 목록 하나를 같이 참조한다.
-# (DB 스키마가 아닌 화면 표시 관심사이므로 models.py가 아닌 여기에 둔다)
 EQUIPMENT_STATUSES = ["정상", "점검중", "고장"]
 STATUS_STYLE_MAP = {"정상": "ok", "점검중": "pending", "고장": "fault"}
 
@@ -36,6 +34,13 @@ def validate_equipment_form(form, exclude_id=None):
         return None, "이미 등록된 장비번호입니다"
 
     return data, None
+
+
+# 검증/저장 실패 시 방금 제출한 값을 그대로 폼에 다시 보여줌 (DB에 저장된 이전 값이 아님)
+def render_form_error(template, error, **context): #렌더링할 템플릿 파일명 , 에러메세지 문자열, 딕셔너리 매개변수
+    # create안에서는 form만 있으면 되는데 edit에서는 form도 있고 equipment도 넘겨야해서 파라미터 개수 차이 존재 -> 여분의 키워드 인자 사용
+    flash(error, "error") # 카테고리를 error로 고정하고 에러 메시지를 담아서 반환
+    return render_template(template, form=request.form, **context) # 어떤 템플릿을 렌더링할지, 사용자가 방금 제출했던 폼 데이터를 템플릿에 넘겨 채움 
 
 
 # 예외처리 함수 지정
@@ -103,11 +108,7 @@ def create_app(test_config=None):
         if request.method == "POST":
             data, error = validate_equipment_form(request.form, exclude_id=equipment.id)
             if error:
-                flash(error, "error")
-                # 검증 실패 시 방금 제출한 값을 그대로 폼에 다시 보여줌 (DB에 저장된 이전 값이 아님)
-                return render_template(
-                    "equipment_edit.html", equipment=equipment, form=request.form
-                )
+                return render_form_error("equipment_edit.html", error, equipment=equipment)
 
             equipment.equipment_code = data["equipment_code"]
             equipment.name = data["name"]
@@ -116,9 +117,8 @@ def create_app(test_config=None):
             equipment.description = data["description"]
 
             if not commit_or_rollback(f"장비 수정 실패 (id={id})"):
-                flash("저장 중 오류가 발생했습니다", "error")
-                return render_template(
-                    "equipment_edit.html", equipment=equipment, form=request.form
+                return render_form_error(
+                    "equipment_edit.html", "저장 중 오류가 발생했습니다", equipment=equipment
                 )
 
             return redirect(url_for("equipment_list"))  # 수정 성공 시 장비 목록 페이지로 이동
@@ -145,20 +145,15 @@ def create_app(test_config=None):
     # POST : 폼 제출하기
     @app.route("/equipment/create", methods=["GET", "POST"])
     def equipment_create():
-        # 검증 실패 시 입력값을 그대로 담아 폼을 다시 보여줌 (에러는 flash로 표시)
-        def render_form_error(error):
-            flash(error, "error")
-            return render_template("equipment_create.html", form=request.form)
-
         if request.method == "POST":
             data, error = validate_equipment_form(request.form)
             if error:
-                return render_form_error(error)
+                return render_form_error("equipment_create.html", error)
 
             equipment = Equipment(**data)
             db.session.add(equipment)
             if not commit_or_rollback("장비 등록 실패"):
-                return render_form_error("저장 중 오류가 발생했습니다")
+                return render_form_error("equipment_create.html", "저장 중 오류가 발생했습니다")
 
             flash("등록이 완료되었습니다")
             # 사용자를 목록 페이지로 이동시킴
