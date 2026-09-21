@@ -36,6 +36,14 @@ def validate_equipment_form(form, exclude_id=None):
     return data, None
 
 
+# id로 장비를 조회하고, 없으면 404 처리까지 함께 담당
+def get_equipment_or_404(id):
+    equipment = db.session.get(Equipment, id) # 있으면 equipment 반환, 없으면 none 반환
+    if equipment is None: # 장비가 없으면 실행을 즉시 중단
+        abort(404, description="해당 장비를 찾을 수 없습니다.") # 설명 문구가 담긴 404 응답을 바로 돌려줌
+    return equipment
+
+
 # 검증/저장 실패 시 방금 제출한 값을 그대로 폼에 다시 보여줌 (DB에 저장된 이전 값이 아님)
 def render_form_error(template, error, **context): #렌더링할 템플릿 파일명 , 에러메세지 문자열, 딕셔너리 매개변수
     # create안에서는 form만 있으면 되는데 edit에서는 form도 있고 equipment도 넘겨야해서 파라미터 개수 차이 존재 -> 여분의 키워드 인자 사용
@@ -89,11 +97,7 @@ def create_app(test_config=None):
     # <int:id> : 컨버터
     @app.route("/equipment/<int:id>") #이 위치에 정수가 들어오면 id라는 이름으로 받겠다는 뜻
     def equipment_detail(id):
-        equipment = db.session.get(Equipment, id) #있으면 equipment반환 , 없으면 none
-        if equipment is None:
-            #장비가 없으면 실행을 즉시 중단
-            abort(404, description="해당 장비를 찾을 수 없습니다.")
-            #설명 문구가 담긴 404 응답을 바로 돌려줌
+        equipment = get_equipment_or_404(id)
         return render_template("equipment_detail.html", equipment=equipment)
 
     # "/equipment/<id>/edit" 접속 시 실행되는 라우트
@@ -101,9 +105,7 @@ def create_app(test_config=None):
     # POST: 폼 제출된 내용으로 기존 장비 정보 수정
     @app.route("/equipment/<int:id>/edit", methods=["GET", "POST"])
     def equipment_edit(id):
-        equipment = db.session.get(Equipment, id)
-        if equipment is None:
-            abort(404, description="해당 장비를 찾을 수 없습니다.")
+        equipment = get_equipment_or_404(id)
 
         if request.method == "POST":
             data, error = validate_equipment_form(request.form, exclude_id=equipment.id)
@@ -129,9 +131,7 @@ def create_app(test_config=None):
     # POST 요청만 허용, 삭제 완료 후 목록 화면으로 이동
     @app.route("/equipment/<int:id>/delete", methods=["POST"])
     def equipment_delete(id):
-        equipment = db.session.get(Equipment, id)
-        if equipment is None:
-            abort(404, description="해당 장비를 찾을 수 없습니다.")
+        equipment = get_equipment_or_404(id)
 
         db.session.delete(equipment)
         if not commit_or_rollback(f"장비 삭제 실패 (id={id})"):
