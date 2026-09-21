@@ -5,12 +5,12 @@
 
   <form method="post" class="form-shell">
     <div class="field">
-      <label class="form-label" for="equipment_code">장비번호</label>
+      <label class="form-label" for="equipment_code">장비번호<span class="required-mark">*</span></label>
       <input class="form-control code" type="text" id="equipment_code" name="equipment_code"
              value="{{ form.equipment_code if form else '' }}">
     </div>
     <div class="field">
-      <label class="form-label" for="name">장비명</label>
+      <label class="form-label" for="name">장비명<span class="required-mark">*</span></label>
       <input class="form-control" type="text" id="name" name="name"
              value="{{ form.name if form else '' }}">
     </div>
