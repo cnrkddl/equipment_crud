@@ -1,17 +1,23 @@
+import os
+
+from dotenv import load_dotenv
 from flask import Flask, Response, abort, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.datastructures import ImmutableMultiDict
 
 from models import Equipment, db
 
+load_dotenv()
+
 EQUIPMENT_STATUSES = ["정상", "점검중", "고장"]
 STATUS_STYLE_MAP = {"정상": "ok", "점검중": "pending", "고장": "fault"}
 
 
 def status_style(status: str) -> str:
-    return STATUS_STYLE_MAP.get(status, "pending")
+    return STATUS_STYLE_MAP.get(status, "pending")  # 매핑에 없는 값이면 pending
 
 
+# TODO : 형식 지정 & 출력 힌트 (return)
 def validate_equipment_form(
     form: ImmutableMultiDict[str, str], exclude_id: int | None = None
 ) -> tuple[dict[str, str] | None, str | None]:
@@ -72,7 +78,7 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     # DB 파일 위치, 세션 암호화 등에 쓰이는 key 설정
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///equipment.db"
-    app.config["SECRET_KEY"] = "dev"
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev")
 
     if test_config:
         app.config.update(test_config)
