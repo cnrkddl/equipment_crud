@@ -78,10 +78,13 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     # DB 파일 위치, 세션 암호화 등에 쓰이는 key 설정
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///equipment.db"
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev")
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 
     if test_config:
         app.config.update(test_config)
+
+    if not app.config["SECRET_KEY"]:
+        raise RuntimeError("SECRET_KEY environment variable is not set")
 
     # db를 이 Flask 앱과 실제로 연결
     db.init_app(app)
